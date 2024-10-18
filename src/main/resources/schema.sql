@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS perfis (
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,
-    senha VARCHAR(60) NOT NULL UNIQUE,
+    senha VARCHAR(60) NOT NULL,
     perfil_id BIGINT NOT NULL REFERENCES perfis(id)
 );
 
@@ -69,12 +69,12 @@ CREATE TABLE IF NOT EXISTS alunos (
     rg VARCHAR(20) NOT NULL,
     naturalidade VARCHAR(64) NOT NULL,
     cep VARCHAR(9) NOT NULL,
-    logradouro VARCHAR(100) NOT NULL,
-    numero VARCHAR(5) NOT NULL,
-    complemento VARCHAR(100) NOT NULL,
-    bairro VARCHAR(100) NOT NULL,
+    logradouro VARCHAR(100),
+    numero VARCHAR(5),
+    complemento VARCHAR(100),
+    bairro VARCHAR(100),
     uf VARCHAR(2) NOT NULL,
-    referencia VARCHAR(100) NOT NULL,
+    referencia VARCHAR(100),
     turma_id BIGINT NOT NULL REFERENCES turmas(id),
     usuario_id BIGINT NOT NULL UNIQUE REFERENCES usuarios(id)
 );
