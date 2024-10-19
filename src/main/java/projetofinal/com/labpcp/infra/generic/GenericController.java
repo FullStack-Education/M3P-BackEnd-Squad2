@@ -6,13 +6,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static projetofinal.com.labpcp.infra.Util.AcessoUtil.verificarPermicao;
+
 @Slf4j
 public abstract class GenericController<S extends GenericService<RES, REQ>, RES, REQ> {
 
     private S service;
+    private final List<String> permicoes;
+
+    protected GenericController(List<String> acessos) {
+        this.permicoes = acessos;
+    }
 
     @GetMapping("buscar/{id}")
-    public ResponseEntity<RES> buscarId(@PathVariable Long id) throws Exception{
+    public ResponseEntity<RES> buscarId(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception{
+        verificarPermicao(token, permicoes);
 
         log.info("buscando com id {}", id);
 
@@ -20,7 +28,8 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     }
 
     @GetMapping("buscar")
-    public ResponseEntity<List<RES>> buscarTodas() {
+    public ResponseEntity<List<RES>> buscarTodas(@RequestHeader(name = "Authorization") String token) {
+        verificarPermicao(token, permicoes);
 
         log.info("buscando todas as entidades");
 
@@ -28,7 +37,8 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     }
 
     @PostMapping("criar")
-    public ResponseEntity<RES> criar(@RequestBody REQ requestDto) {
+    public ResponseEntity<RES> criar(@RequestHeader(name = "Authorization") String token, @RequestBody REQ requestDto) {
+        verificarPermicao(token, permicoes);
 
         log.info("criando entidade");
 
@@ -36,7 +46,8 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     }
 
     @DeleteMapping("deletar/{id}")
-    public ResponseEntity<Object> deleter(@PathVariable Long id) throws Exception{
+    public ResponseEntity<Object> deleter(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception{
+        verificarPermicao(token, List.of("administrador"));
 
         log.info("deletando o id {}", id);
 
@@ -44,7 +55,8 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
         return ResponseEntity.status(204).build();
     }
     @PutMapping("atualizar/{id}")
-    public ResponseEntity<Object> atualizar(@RequestBody REQ requestDto, @PathVariable Long id) throws Exception{
+    public ResponseEntity<Object> atualizar(@RequestHeader(name = "Authorization") String token, @RequestBody REQ requestDto, @PathVariable Long id) throws Exception{
+        verificarPermicao(token, permicoes);
 
         log.info("atualizando o id {}", id);
 
