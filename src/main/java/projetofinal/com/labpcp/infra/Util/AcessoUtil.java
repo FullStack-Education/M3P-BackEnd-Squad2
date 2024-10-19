@@ -3,7 +3,7 @@ package projetofinal.com.labpcp.infra.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import projetofinal.com.labpcp.infra.ApplicationContext.ApplicationContextProvider;
-import projetofinal.com.labpcp.service.serviceImpl.AuthService;
+import projetofinal.com.labpcp.service.serviceImpl.AuthServiceImpl;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class AcessoUtil {
         log.info("Iniciando verificação de autenticação!");
 
         ApplicationContext context = ApplicationContextProvider.getApplicationContext();
-        AuthService authService =  context.getBean(AuthService.class);
+        AuthServiceImpl authService =  context.getBean(AuthServiceImpl.class);
 
         String papelToken =  authService.buscaCampoToken(token.substring(7), "scope");
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthService implements projetofinal.com.labpcp.service.AuthService {
+public class AuthServiceImpl implements projetofinal.com.labpcp.service.AuthService {
 
     private final JwtDecoder jwtDecoder;
 
