@@ -1,7 +1,7 @@
 package projetofinal.com.labpcp.infra.exception.error;
 
 import lombok.extern.slf4j.Slf4j;
-import projetofinal.com.labpcp.infra.exception.NotFoundException;
+///import projetofinal.com.labpcp.infra.exception.NotFoundException;
 
 @Slf4j
 public class NotFoundExceptionEntity extends NotFoundException{
