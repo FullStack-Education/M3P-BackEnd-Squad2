@@ -2,6 +2,8 @@ package projetofinal.com.labpcp.infra.generic;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.JpaRepository;
+import projetofinal.com.labpcp.infra.exception.NotFoundException;
+import projetofinal.com.labpcp.infra.exception.error.NotFoundExceptionEntity;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -22,11 +24,11 @@ public abstract class GenericServiceImpl<E extends GenericEntity, RES, REQ> impl
 
     protected abstract E paraEntity(REQ requestDto);
 
-    public RES buscarPorId(Long id) throws Exception{
+    public RES buscarPorId(Long id) {
         return paraDto(buscarEntityPorId(id));
     }
 
-    public E buscarEntityPorId(Long id) throws Exception{
+    public E buscarEntityPorId(Long id) {
 
         entidadeExiste(id);
 
@@ -54,14 +56,14 @@ public abstract class GenericServiceImpl<E extends GenericEntity, RES, REQ> impl
         return paraDto(entity);
     }
 
-    public void deletar (Long id) throws Exception{
+    public void deletar (Long id) {
         entidadeExiste(id);
         repository.deleteById(id);
 
         log.info("entidade {} deletada com sucesso", nomeEntity);
     }
 
-    public void atualizar (REQ requestDto, Long id) throws Exception{
+    public void atualizar (REQ requestDto, Long id) {
         entidadeExiste(id);
         E entity = paraEntity(requestDto);
 
@@ -72,12 +74,12 @@ public abstract class GenericServiceImpl<E extends GenericEntity, RES, REQ> impl
         log.info("entidade {} atualizada com sucesso", nomeEntity);
     }
 
-    public void entidadeExiste(Long id) throws Exception{
+    public void entidadeExiste(Long id) {
 
         log.info("verificando se {} com id {} existe", nomeEntity, id);
 
         if (!repository.existsById(id)) {
-            throw new Exception(String.format("%s com id %d não encontrado", nomeEntity, id));
+            throw new NotFoundExceptionEntity(nomeEntity, id);
 
         }
 
