@@ -7,7 +7,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.Erro;
+import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 
 @Slf4j
 @ControllerAdvice
@@ -46,5 +48,14 @@ public class ErrorHandler {
                 .mensagem(e.getMessage())
                 .build();
         return ResponseEntity.status(404).body(erro);
+    }
+
+    @ExceptionHandler(EntityAlreadyExists.class)
+    public ResponseEntity<?> handler(EntityAlreadyExists e) {
+        Erro erro = Erro.builder()
+                .codigo("400 (Bad Request)")
+                .mensagem(e.getMessage())
+                .build();
+        return ResponseEntity.status(400).body(erro);
     }
 }
