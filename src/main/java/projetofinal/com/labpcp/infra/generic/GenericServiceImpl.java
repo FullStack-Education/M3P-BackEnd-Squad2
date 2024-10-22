@@ -2,7 +2,7 @@ package projetofinal.com.labpcp.infra.generic;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.JpaRepository;
-import projetofinal.com.labpcp.infra.exception.NotFoundException;
+//import projetofinal.com.labpcp.infra.exception.NotFoundException;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundExceptionEntity;
 
 import java.lang.reflect.ParameterizedType;
