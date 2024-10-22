@@ -3,6 +3,7 @@ package projetofinal.com.labpcp.infra.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import projetofinal.com.labpcp.infra.ApplicationContext.ApplicationContextProvider;
+import projetofinal.com.labpcp.infra.exception.error.AuthException;
 import projetofinal.com.labpcp.service.serviceImpl.AuthServiceImpl;
 
 import java.util.List;
@@ -26,6 +27,6 @@ public class AcessoUtil {
         }
 
         log.error("Usuario não tem acesso a essa funcionalidade!");
-        throw new RuntimeException("Usuario não tem acesso a essa funcionalidade");
+        throw new AuthException("Usuario não tem acesso a essa funcionalidade");
     }
 }

@@ -63,7 +63,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             return new RuntimeException();
         });
 
-        if(bCryptPasswordEncoder.matches(usuarioEntity.getSenha(), loginRequest.senha())){
+        if(!bCryptPasswordEncoder.matches(loginRequest.senha(), usuarioEntity.getSenha())){
             log.error("Erro, senha inválida");
             throw new RuntimeException();
         }

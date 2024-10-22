@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import projetofinal.com.labpcp.infra.exception.error.AuthException;
 import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.Erro;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
@@ -19,6 +20,15 @@ public class ErrorHandler {
         Erro erro = Erro.builder()
                 .codigo("401 (Unauthorized)")
                 .mensagem("Credenciais inválidas. O usuário não está autorizado a acessar o sistema.")
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(erro);
+    }
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<?> handleAuthException(AuthException ex) {
+        Erro erro = Erro.builder()
+                .codigo("401 (Unauthorized)")
+                .mensagem(ex.getMessage())
                 .build();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(erro);
     }
