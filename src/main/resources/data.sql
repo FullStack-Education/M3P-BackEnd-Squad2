@@ -25,7 +25,6 @@ VALUES
 ('Node.js', 3)
 ON CONFLICT (nome) DO NOTHING;
 
-
 INSERT INTO usuarios (email, senha, perfil_id)
 SELECT 'administrador@gmail.com', '$2a$09$p7ay7ydkqUwN/xe73uqn3.OwvqVoAkuGZeNZ6XgwMBfHAvzmQphBq', 1
 WHERE NOT EXISTS (
