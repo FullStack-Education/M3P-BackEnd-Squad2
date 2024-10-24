@@ -19,6 +19,7 @@ import projetofinal.com.labpcp.repository.UsuarioRepository;
 import projetofinal.com.labpcp.service.DocenteService;
 
 import java.util.Date;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -26,6 +27,10 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
     private final UsuarioRepository usuarioRepository;
     private final PerfilRepository perfilRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int LENGTH = 5;
+    private static final Random RANDOM = new Random();
 
     protected DocenteServiceImpl(DocenteRepository repository, UsuarioRepository usuarioRepository, PerfilRepository perfilRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         super(repository);
@@ -74,26 +79,21 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
 
     @Override
     protected DocenteEntity paraEntity(DocenteRequest requestDto) {
-        log.info("Verificando se email informado já está cadastrado");
-
-        usuarioRepository.findByEmail(requestDto.email())
-                .ifPresent(usuario -> {
-                    throw new EntityAlreadyExists("usuarios", "email", usuario.getEmail());
-                });
+        log.info("Criando usuário para o docente");
 
         String perfilDocente = "docente";
-        PerfilEntity perfil  = perfilRepository.findByNome(perfilDocente)
-                .orElseThrow(() -> new NotFoundException("perfil '" + perfilDocente +  "' não encontrado"));
+        PerfilEntity perfil = perfilRepository.findByNome(perfilDocente)
+                .orElseThrow(() -> new NotFoundException("perfil '" + perfilDocente + "' não encontrado"));
 
-        String senha = bCryptPasswordEncoder.encode(requestDto.senha());
+        String senha = bCryptPasswordEncoder.encode("docente123");
 
-        UsuarioEntity usuario = new UsuarioEntity(requestDto.email(), senha, perfil);
+        String emailGenerateDocente = requestDto.nome().toLowerCase().replace(" ", "") + generateRandomString() + "@docente.com";
+
+        UsuarioEntity usuario = new UsuarioEntity(emailGenerateDocente, senha, perfil);
 
         usuarioRepository.save(usuario);
 
         log.info("entidade usuário para o docente criada com sucesso");
-
-        // converter em Date o requestDto.dataNascimento()
 
         Date dataNascimento = new Date(requestDto.dataNascimento().getTime());
 
@@ -116,5 +116,13 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.referencia(),
                 usuario
         );
+    }
+
+    private static String generateRandomString() {
+        StringBuilder sb = new StringBuilder(LENGTH);
+        for (int i = 0; i < LENGTH; i++) {
+            sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+        }
+        return sb.toString();
     }
 }
