@@ -10,7 +10,6 @@ import projetofinal.com.labpcp.controller.dto.response.DocenteResponse;
 import projetofinal.com.labpcp.entity.DocenteEntity;
 import projetofinal.com.labpcp.entity.PerfilEntity;
 import projetofinal.com.labpcp.entity.UsuarioEntity;
-import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 import projetofinal.com.labpcp.infra.generic.GenericServiceImpl;
 import projetofinal.com.labpcp.repository.DocenteRepository;
