@@ -1,11 +1,10 @@
 package projetofinal.com.labpcp.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import projetofinal.com.labpcp.infra.generic.GenericEntity;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -14,9 +13,12 @@ public class MateriaEntity extends GenericEntity {
 
     private String nome;
 
-    @ManyToOne
-    @JoinColumn(name = "curso_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id", nullable = false)
     private CursoEntity curso;
+
+    @ManyToMany(mappedBy = "materias",fetch = FetchType.LAZY)
+    private List<DocenteEntity> docentes;
 
     public MateriaEntity() {
     }
@@ -24,5 +26,6 @@ public class MateriaEntity extends GenericEntity {
     public MateriaEntity(String nome, CursoEntity curso) {
         this.nome = nome;
         this.curso = curso;
+
     }
 }

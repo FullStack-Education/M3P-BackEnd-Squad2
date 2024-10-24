@@ -1,4 +1,6 @@
 package projetofinal.com.labpcp.controller.dto.response;
 
-public record CursoResponse(Long id, String nome, String duracao) {
+import java.util.List;
+
+public record CursoResponse(Long id, String nome, String duracao, List<MateriaResponse> materias) {
 }
