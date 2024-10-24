@@ -14,13 +14,11 @@ import projetofinal.com.labpcp.entity.DocenteEntity;
 import projetofinal.com.labpcp.entity.MateriaEntity;
 import projetofinal.com.labpcp.entity.PerfilEntity;
 import projetofinal.com.labpcp.entity.UsuarioEntity;
+import projetofinal.com.labpcp.infra.exception.error.BadRequestException;
 import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 import projetofinal.com.labpcp.infra.generic.GenericServiceImpl;
-import projetofinal.com.labpcp.repository.DocenteRepository;
-import projetofinal.com.labpcp.repository.MateriaRepository;
-import projetofinal.com.labpcp.repository.PerfilRepository;
-import projetofinal.com.labpcp.repository.UsuarioRepository;
+import projetofinal.com.labpcp.repository.*;
 import projetofinal.com.labpcp.service.DocenteService;
 
 import java.util.Date;
@@ -34,8 +32,9 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
     private final PerfilRepository perfilRepository;
     private final MateriaRepository materiaRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
     private final DocenteRepository repository;
+
+    private final TurmaRepository turmaRepository;
 
 
 
@@ -43,13 +42,15 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                                  UsuarioRepository usuarioRepository,
                                  PerfilRepository perfilRepository,
                                  MateriaRepository materiaRepository,
-                                 BCryptPasswordEncoder bCryptPasswordEncoder) {
+                                 BCryptPasswordEncoder bCryptPasswordEncoder,
+                                 TurmaRepository turmaRepository) {
         super(repository);
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.perfilRepository = perfilRepository;
         this.materiaRepository = materiaRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.turmaRepository = turmaRepository;
     }
 
     @Override
@@ -195,11 +196,18 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
         repository.save(existingDocente);
     }
 
+
     @Override
     public void deletar(Long id) {
-
+        entidadeExiste(id);
         DocenteEntity existeDocente = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Docente com id: '" + id + "' não encontrado"));
+
+
+        if (turmaRepository.existsByDocenteId(id)) {
+            log.error("Não é possível deletar o docente com id {}. Ele possui turmas associadas.", id);
+            throw new BadRequestException("Não é possível deletar o docente enquanto ele tiver turmas associadas.");
+        }
 
 
         if (existeDocente.getMaterias() != null && !existeDocente.getMaterias().isEmpty()) {
@@ -210,11 +218,9 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
             }
         }
 
-
         UsuarioEntity usuario = existeDocente.getUsuario();
         repository.delete(existeDocente);
         log.info("Docente com id {} deletado com sucesso", id);
-
 
         if (usuario != null) {
             usuarioRepository.delete(usuario);

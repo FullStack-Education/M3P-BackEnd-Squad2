@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import projetofinal.com.labpcp.infra.generic.GenericEntity;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
