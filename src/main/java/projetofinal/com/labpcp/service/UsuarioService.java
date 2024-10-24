@@ -7,6 +7,6 @@ import projetofinal.com.labpcp.controller.dto.response.LoginResponse;
 
 public interface UsuarioService {
     CadastroResponse cadastrarUsuario(CadastroRequest cadastroRequest);
-
     LoginResponse login(LoginRequest loginRequest);
+
 }

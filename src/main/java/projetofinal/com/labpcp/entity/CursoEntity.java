@@ -1,11 +1,13 @@
 package projetofinal.com.labpcp.entity;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import projetofinal.com.labpcp.controller.dto.request.CursoRequest;
 import projetofinal.com.labpcp.infra.generic.GenericEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -14,6 +16,9 @@ public class CursoEntity extends GenericEntity {
 
     private String nome;
     private String duracao;
+
+    @OneToMany(mappedBy = "curso", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<MateriaEntity> materias = new ArrayList<>();
 
     public CursoEntity () {}
 
