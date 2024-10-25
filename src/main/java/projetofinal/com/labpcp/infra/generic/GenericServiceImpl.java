@@ -16,7 +16,7 @@ public abstract class GenericServiceImpl<E extends GenericEntity, RES, REQ> impl
     protected GenericServiceImpl(JpaRepository<E, Long> repository) {
         this.repository = repository;
         ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        this.nomeEntity = parameterizedType.getActualTypeArguments()[0].getTypeName().substring(28).replace("Entity", "");
+        this.nomeEntity = parameterizedType.getActualTypeArguments()[0].getTypeName().substring(31).replace("Entity", "");
     }
 
     protected abstract RES paraDto(E entity);

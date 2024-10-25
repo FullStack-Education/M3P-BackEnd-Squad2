@@ -26,7 +26,7 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     protected GenericController(List<String> acessos) {
         this.permicoes = acessos;
         ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        this.nomeEntity = parameterizedType.getActualTypeArguments()[0].getTypeName().substring(29).replace("Service", "");
+        this.nomeEntity = parameterizedType.getActualTypeArguments()[0].getTypeName().substring(32).replace("Service", "");
     }
 
     @GetMapping("buscar/{id}")
