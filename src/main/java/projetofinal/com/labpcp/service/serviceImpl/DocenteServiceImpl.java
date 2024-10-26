@@ -2,9 +2,8 @@ package projetofinal.com.labpcp.service.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import projetofinal.com.labpcp.controller.dto.request.CadastroRequest;
 import projetofinal.com.labpcp.controller.dto.request.DocenteRequest;
 import projetofinal.com.labpcp.controller.dto.response.CadastroResponse;
 import projetofinal.com.labpcp.controller.dto.response.DocenteResponse;
@@ -12,7 +11,6 @@ import projetofinal.com.labpcp.controller.dto.response.DocenteResponse;
 import projetofinal.com.labpcp.controller.dto.response.MateriaResponse;
 import projetofinal.com.labpcp.entity.DocenteEntity;
 import projetofinal.com.labpcp.entity.MateriaEntity;
-import projetofinal.com.labpcp.entity.PerfilEntity;
 import projetofinal.com.labpcp.entity.UsuarioEntity;
 import projetofinal.com.labpcp.infra.exception.error.BadRequestException;
 import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
@@ -20,6 +18,7 @@ import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 import projetofinal.com.labpcp.infra.generic.GenericServiceImpl;
 import projetofinal.com.labpcp.repository.*;
 import projetofinal.com.labpcp.service.DocenteService;
+import projetofinal.com.labpcp.service.UsuarioService;
 
 import java.util.Date;
 import java.util.List;
@@ -29,28 +28,20 @@ import java.util.stream.Collectors;
 @Service
 public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, DocenteResponse, DocenteRequest> implements DocenteService {
     private final UsuarioRepository usuarioRepository;
-    private final PerfilRepository perfilRepository;
     private final MateriaRepository materiaRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final DocenteRepository repository;
-
     private final TurmaRepository turmaRepository;
+    private final UsuarioService usuarioService;
 
 
 
-    protected DocenteServiceImpl(DocenteRepository repository,
-                                 UsuarioRepository usuarioRepository,
-                                 PerfilRepository perfilRepository,
-                                 MateriaRepository materiaRepository,
-                                 BCryptPasswordEncoder bCryptPasswordEncoder,
-                                 TurmaRepository turmaRepository) {
+    protected DocenteServiceImpl(DocenteRepository repository, UsuarioRepository usuarioRepository, MateriaRepository materiaRepository, TurmaRepository turmaRepository, UsuarioService usuarioService) {
         super(repository);
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
-        this.perfilRepository = perfilRepository;
         this.materiaRepository = materiaRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.turmaRepository = turmaRepository;
+        this.usuarioService = usuarioService;
     }
 
     @Override
@@ -98,38 +89,20 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
 
     @Override
     protected DocenteEntity paraEntity(DocenteRequest requestDto) {
-        log.info("Criando usuário para o docente");
 
-        String perfilDocente = "docente";
-        PerfilEntity perfil = perfilRepository.findByNome(perfilDocente)
-                .orElseThrow(() -> new NotFoundException("perfil '" + perfilDocente + "' não encontrado"));
+        log.info("convertendo dto de docente para entidade");
 
-        String senha = bCryptPasswordEncoder.encode(requestDto.senha());
-        String email = requestDto.email();
-
-
-        UsuarioEntity usuario = new UsuarioEntity(email, senha, perfil);
-        usuarioRepository.findByEmail(usuario.getEmail())
-                .ifPresent(usuarios -> {
-                    throw new EntityAlreadyExists("usuarios", "email", usuario.getEmail());
-                });
-
-        usuarioRepository.save(usuario);
-        log.info("entidade usuário para o docente criada com sucesso");
-
-        Date dataNascimento = new Date(requestDto.dataNascimento().getTime());
         List<MateriaEntity> materias = requestDto.materiasIds().stream()
                 .map(materiaId -> materiaRepository.findById(materiaId)
                         .orElseThrow(() -> new NotFoundException("Matéria com id: " + materiaId + " não encontrada")))
                 .collect(Collectors.toList());
 
-        log.info("convertendo dto de docente para entidade");
         return new DocenteEntity(
                 requestDto.nome(),
                 requestDto.telefone(),
                 requestDto.genero(),
                 requestDto.estadoCivil(),
-                dataNascimento,
+                requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
                 requestDto.naturalidade(),
@@ -140,9 +113,43 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.bairro(),
                 requestDto.uf(),
                 requestDto.referencia(),
-                usuario,
+                requestDto.usuario(),
                 materias
         );
+    }
+
+    @Override
+    public DocenteResponse criar(DocenteRequest requestDto) {
+
+        log.info("Criando usuário para o docente");
+
+        CadastroResponse cadastroResponse = usuarioService.cadastrarUsuario(new CadastroRequest(requestDto.email(), requestDto.senha(), "docente"));
+
+        UsuarioEntity usuario = usuarioRepository.findById(cadastroResponse.id()).orElseThrow(() -> new NotFoundException("usuário para docente não esta sendo criado corretamente"));
+
+        DocenteRequest superRequest = new DocenteRequest(
+                requestDto.nome(),
+                requestDto.telefone(),
+                requestDto.genero(),
+                requestDto.estadoCivil(),
+                new Date(requestDto.dataNascimento().getTime()),
+                requestDto.cpf(),
+                requestDto.rg(),
+                requestDto.naturalidade(),
+                requestDto.cep(),
+                requestDto.logradouro(),
+                requestDto.numero(),
+                requestDto.complemento(),
+                requestDto.bairro(),
+                requestDto.uf(),
+                requestDto.referencia(),
+                requestDto.materiasIds(),
+                null,
+                null,
+                usuario
+        );
+
+        return super.criar(superRequest);
     }
 
     @Override
@@ -154,46 +161,40 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
 
 
         String email = requestDto.email();
+        UsuarioEntity usuario = existingDocente.getUsuario();
+
         if (!email.equals(existingDocente.getUsuario().getEmail())) {
             usuarioRepository.findByEmail(email)
-                    .ifPresent(usuario -> {
+                    .ifPresent(usuarioEmail -> {
                         throw new EntityAlreadyExists("usuarios", "email", email);
                     });
-        }
-
-
-        existingDocente.setNome(requestDto.nome());
-        existingDocente.setTelefone(requestDto.telefone());
-        existingDocente.setGenero(requestDto.genero());
-        existingDocente.setEstadoCivil(requestDto.estadoCivil());
-        existingDocente.setDataNascimento(new Date(requestDto.dataNascimento().getTime()));
-        existingDocente.setCpf(requestDto.cpf());
-        existingDocente.setRg(requestDto.rg());
-        existingDocente.setNaturalidade(requestDto.naturalidade());
-        existingDocente.setCep(requestDto.cep());
-        existingDocente.setLogradouro(requestDto.logradouro());
-        existingDocente.setNumero(requestDto.numero());
-        existingDocente.setComplemento(requestDto.complemento());
-        existingDocente.setBairro(requestDto.bairro());
-        existingDocente.setUf(requestDto.uf());
-        existingDocente.setReferencia(requestDto.referencia());
-
-
-        if (!email.equals(existingDocente.getUsuario().getEmail())) {
-            UsuarioEntity usuario = existingDocente.getUsuario();
             usuario.setEmail(email);
             usuarioRepository.save(usuario);
         }
 
+        DocenteRequest superRequest = new DocenteRequest(
+                requestDto.nome(),
+                requestDto.telefone(),
+                requestDto.genero(),
+                requestDto.estadoCivil(),
+                new Date(requestDto.dataNascimento().getTime()),
+                requestDto.cpf(),
+                requestDto.rg(),
+                requestDto.naturalidade(),
+                requestDto.cep(),
+                requestDto.logradouro(),
+                requestDto.numero(),
+                requestDto.complemento(),
+                requestDto.bairro(),
+                requestDto.uf(),
+                requestDto.referencia(),
+                requestDto.materiasIds(),
+                null,
+                null,
+                usuario
+        );
 
-        List<MateriaEntity> novasMaterias = requestDto.materiasIds().stream()
-                .map(materiaId -> materiaRepository.findById(materiaId)
-                        .orElseThrow(() -> new NotFoundException("Matéria com id: '" + materiaId + "' não encontrada")))
-                .collect(Collectors.toList());
-
-        existingDocente.setMaterias(novasMaterias);
-
-        repository.save(existingDocente);
+        super.atualizar(superRequest, id);
     }
 
 
