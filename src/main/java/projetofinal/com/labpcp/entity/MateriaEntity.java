@@ -26,6 +26,5 @@ public class MateriaEntity extends GenericEntity {
     public MateriaEntity(String nome, CursoEntity curso) {
         this.nome = nome;
         this.curso = curso;
-
     }
 }
