@@ -21,7 +21,7 @@ public class AcessoUtil {
 
         for (String permicao : permicoes) {
             if (permicao.equalsIgnoreCase(papelToken)){
-                log.error("Usuario tem acesso a essa funcionalidade!");
+                log.info("Usuario tem acesso a essa funcionalidade!");
                 return;
             }
         }

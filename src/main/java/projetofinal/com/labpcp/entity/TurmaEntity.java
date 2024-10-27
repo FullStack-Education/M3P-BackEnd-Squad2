@@ -14,13 +14,10 @@ public class TurmaEntity extends GenericEntity {
 
     private String nome;
 
-    @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
 
-    @Column(name = "data_termino", nullable = false)
     private LocalDate dataTermino;
 
-    @Column(name = "horario", nullable = false)
     private String horario;
 
     @ManyToOne
