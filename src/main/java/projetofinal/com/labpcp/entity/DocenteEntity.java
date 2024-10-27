@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import projetofinal.com.labpcp.infra.generic.GenericEntity;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class DocenteEntity extends GenericEntity {
     private String telefone;
     private String genero;
     private String estadoCivil;
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
     private String cpf;
     private String rg;
     private String naturalidade;
@@ -46,7 +47,7 @@ public class DocenteEntity extends GenericEntity {
     public DocenteEntity() {
     }
 
-    public DocenteEntity(String nome, String telefone, String genero, String estadoCivil, Date dataNascimento, String cpf, String rg, String naturalidade, String cep, String logradouro, String numero, String complemento, String bairro, String uf, String referencia, UsuarioEntity usuario,  List<MateriaEntity> materias) {
+    public DocenteEntity(String nome, String telefone, String genero, String estadoCivil, LocalDate dataNascimento, String cpf, String rg, String naturalidade, String cep, String logradouro, String numero, String complemento, String bairro, String uf, String referencia, UsuarioEntity usuario,  List<MateriaEntity> materias) {
         this.nome = nome;
         this.telefone = telefone;
         this.genero = genero;
