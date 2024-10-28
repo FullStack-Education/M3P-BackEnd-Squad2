@@ -12,9 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("alunos")
 public class AlunoController extends GenericController<AlunoService, AlunoResponse, AlunoRequest> {
-
     protected AlunoController() {
-        super(List.of("administrador"));
+        super(List.of("administrador", "docente"));
     }
-
 }

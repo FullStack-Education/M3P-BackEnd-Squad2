@@ -59,7 +59,6 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
 
         log.info("convertendo entidade de docente para dto");
 
-        Date dataNascimento = new Date(entity.getDataNascimento().getTime());
 
         List<MateriaResponse> materias = entity.getMaterias().stream()
                 .map(materia -> new MateriaResponse(materia.getId(), materia.getNome(), materia.getCurso().getId()))
@@ -71,7 +70,7 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 entity.getTelefone(),
                 entity.getGenero(),
                 entity.getEstadoCivil(),
-                dataNascimento,
+                entity.getDataNascimento(),
                 entity.getCpf(),
                 entity.getRg(),
                 entity.getNaturalidade(),
@@ -132,7 +131,7 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.telefone(),
                 requestDto.genero(),
                 requestDto.estadoCivil(),
-                new Date(requestDto.dataNascimento().getTime()),
+                requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
                 requestDto.naturalidade(),
@@ -177,7 +176,7 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.telefone(),
                 requestDto.genero(),
                 requestDto.estadoCivil(),
-                new Date(requestDto.dataNascimento().getTime()),
+                requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
                 requestDto.naturalidade(),

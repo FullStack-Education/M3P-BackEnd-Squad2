@@ -1,48 +1,41 @@
 package projetofinal.com.labpcp.service.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import projetofinal.com.labpcp.controller.dto.request.AlunoRequest;
-import projetofinal.com.labpcp.controller.dto.response.AlunoResponse;
-import projetofinal.com.labpcp.controller.dto.response.CadastroResponse;
+import projetofinal.com.labpcp.controller.dto.request.CadastroRequest;
+import projetofinal.com.labpcp.controller.dto.response.*;
 import projetofinal.com.labpcp.entity.*;
-import projetofinal.com.labpcp.infra.exception.error.BadRequestException;
 import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 import projetofinal.com.labpcp.infra.generic.GenericServiceImpl;
-import projetofinal.com.labpcp.repository.AlunoRepository;
-import projetofinal.com.labpcp.repository.PerfilRepository;
-import projetofinal.com.labpcp.repository.TurmaRepository;
-import projetofinal.com.labpcp.repository.UsuarioRepository;
+import projetofinal.com.labpcp.repository.*;
 import projetofinal.com.labpcp.service.AlunoService;
+import projetofinal.com.labpcp.service.UsuarioService;
 
-import java.util.Date;
+
 
 @Slf4j
 @Service
 public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoResponse, AlunoRequest> implements AlunoService {
-
-    private final AlunoRepository alunoRepository;
-    private final TurmaServiceImpl turmaService;
     private final UsuarioRepository usuarioRepository;
-    private final PerfilRepository perfilRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public AlunoServiceImpl(AlunoRepository repository,
-                            UsuarioRepository usuarioRepository,
-                            TurmaServiceImpl turmaService, PerfilRepository perfilRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    private final AlunoRepository repository;
+    private final TurmaRepository turmaRepository;
+    private final UsuarioService usuarioService;
+
+
+
+    protected AlunoServiceImpl(AlunoRepository repository, UsuarioRepository usuarioRepository, TurmaRepository turmaRepository, UsuarioService usuarioService) {
         super(repository);
+        this.repository = repository;
         this.usuarioRepository = usuarioRepository;
-        this.turmaService = turmaService;
-        this.alunoRepository = repository;
-        this.perfilRepository = perfilRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.turmaRepository = turmaRepository;
+        this.usuarioService = usuarioService;
     }
 
     @Override
     protected AlunoResponse paraDto(AlunoEntity entity) {
-
         log.info("Buscando usuário pelo email");
 
         UsuarioEntity usuarioCadastrado = usuarioRepository.findByEmail(entity.getUsuario().getEmail())
@@ -56,12 +49,29 @@ public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoRespo
 
         log.info("convertendo entidade de aluno para dto");
 
-        Date dataNascimento = new Date(entity.getDataNascimento().getTime());
+        TurmaEntity turmaEntity = turmaRepository.findById(entity.getTurma().getId())
+                .orElseThrow(() -> new NotFoundException("Turma com ID: '" + entity.getTurma().getId() + "' não encontrada"));
 
-        return new AlunoResponse(entity.getId(), entity.getNome(), entity.getGenero(), dataNascimento,
+
+        TurmaResponse turma = new TurmaResponse(
+                turmaEntity.getId(),
+                turmaEntity.getNome(),
+                turmaEntity.getDataInicio(),
+                turmaEntity.getDataTermino(),
+                turmaEntity.getHorario(),
+                turmaEntity.getDocente().getId(),
+                turmaEntity.getCurso().getId()
+        );
+
+
+        return new AlunoResponse(
+                entity.getId(),
+                entity.getNome(),
+                entity.getTelefone(),
+                entity.getGenero(),
+                entity.getDataNascimento(),
                 entity.getCpf(),
                 entity.getRg(),
-                entity.getTelefone(),
                 entity.getNaturalidade(),
                 entity.getCep(),
                 entity.getLogradouro(),
@@ -70,114 +80,136 @@ public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoRespo
                 entity.getBairro(),
                 entity.getUf(),
                 entity.getReferencia(),
-                retornoUsuario,
-                entity.getTurma().getId());
+                turma,
+                retornoUsuario
+        );
     }
 
     @Override
     protected AlunoEntity paraEntity(AlunoRequest requestDto) {
 
+        log.info("convertendo dto de aluno para entidade");
+
+
+
+        TurmaEntity turma = turmaRepository.findById(requestDto.turma())
+                .orElseThrow(() -> new NotFoundException("Turma com ID: '" + requestDto.turma() + "' não encontrada"));
+
+        return new AlunoEntity(
+                requestDto.nome(),
+                requestDto.telefone(),
+                requestDto.genero(),
+                requestDto.dataNascimento(),
+                requestDto.cpf(),
+                requestDto.rg(),
+                requestDto.naturalidade(),
+                requestDto.cep(),
+                requestDto.logradouro(),
+                requestDto.numero(),
+                requestDto.complemento(),
+                requestDto.bairro(),
+                requestDto.uf(),
+                requestDto.referencia(),
+                turma,
+                requestDto.usuario()
+
+        );
+    }
+
+    @Override
+    public AlunoResponse criar(AlunoRequest requestDto) {
+
         log.info("Criando usuário para o aluno");
 
-        String perfilAluno = "aluno";
-        PerfilEntity perfil = perfilRepository.findByNome(perfilAluno)
-                .orElseThrow(() -> new NotFoundException("perfil '" + perfilAluno + "' não encontrado"));
+        CadastroResponse cadastroResponse = usuarioService.cadastrarUsuario(new CadastroRequest(requestDto.email(), requestDto.senha(), "aluno"));
 
-        String senha = bCryptPasswordEncoder.encode(requestDto.senha());
-        String email = requestDto.email();
+        UsuarioEntity usuario = usuarioRepository.findById(cadastroResponse.id()).orElseThrow(() -> new NotFoundException("usuário para docente não esta sendo criado corretamente"));
 
-        UsuarioEntity usuario = new UsuarioEntity(email, senha, perfil);
-        usuarioRepository.findByEmail(usuario.getEmail())
-                .ifPresent(usuarios -> {
-                    throw new EntityAlreadyExists("usuarios", "email", usuario.getEmail());
-                });
+        AlunoRequest superRequest = new AlunoRequest(
+                requestDto.nome(),
+                requestDto.telefone(),
+                requestDto.genero(),
+                requestDto.dataNascimento(),
+                requestDto.cpf(),
+                requestDto.rg(),
+                requestDto.naturalidade(),
+                requestDto.cep(),
+                requestDto.logradouro(),
+                requestDto.numero(),
+                requestDto.complemento(),
+                requestDto.bairro(),
+                requestDto.uf(),
+                requestDto.referencia(),
+                requestDto.turma(),
+                null,
+                null,
+                usuario
+        );
 
-        TurmaEntity turma = turmaService.buscarEntityPorId(requestDto.turmaId());
-        if(turma.getId() != null) {
-            usuarioRepository.save(usuario);
-            log.info("entidade usuário para o aluno criada com sucesso");
-        } else {
-            log.error("Não é possível encontrar a turma com id {}.", requestDto.turmaId());
-        }
-
-        log.info("convertendo dto de aluno para entidade");
-        return new AlunoEntity(requestDto,
-                turma,
-                usuario);
+        return super.criar(superRequest);
     }
 
     @Override
     public void atualizar(AlunoRequest requestDto, Long id) {
         entidadeExiste(id);
 
-        AlunoEntity existingAluno = alunoRepository.findById(id)
+        AlunoEntity existingAluno = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Aluno com id: '" + id + "' não encontrado"));
 
+
         String email = requestDto.email();
+        UsuarioEntity usuario = existingAluno.getUsuario();
+
         if (!email.equals(existingAluno.getUsuario().getEmail())) {
             usuarioRepository.findByEmail(email)
-                    .ifPresent(usuario -> {
+                    .ifPresent(usuarioEmail -> {
                         throw new EntityAlreadyExists("usuarios", "email", email);
                     });
-        }
-
-
-        existingAluno.setNome(requestDto.nome());
-        existingAluno.setTelefone(requestDto.telefone());
-        existingAluno.setGenero(requestDto.genero());
-        existingAluno.setDataNascimento(new Date(requestDto.dataNascimento().getTime()));
-        existingAluno.setCpf(requestDto.cpf());
-        existingAluno.setRg(requestDto.rg());
-        existingAluno.setNaturalidade(requestDto.naturalidade());
-        existingAluno.setCep(requestDto.cep());
-        existingAluno.setLogradouro(requestDto.logradouro());
-        existingAluno.setNumero(requestDto.numero());
-        existingAluno.setComplemento(requestDto.complemento());
-        existingAluno.setBairro(requestDto.bairro());
-        existingAluno.setUf(requestDto.uf());
-        existingAluno.setReferencia(requestDto.referencia());
-
-        if (!email.equals(existingAluno.getUsuario().getEmail())) {
-            UsuarioEntity usuario = existingAluno.getUsuario();
             usuario.setEmail(email);
             usuarioRepository.save(usuario);
         }
 
-        if (!requestDto.senha().isEmpty()){
-            String senha = bCryptPasswordEncoder.encode(requestDto.senha());
-            UsuarioEntity usuario = existingAluno.getUsuario();
-            usuario.setSenha(senha);
-            usuarioRepository.save(usuario);
-        }
+        AlunoRequest superRequest = new AlunoRequest(
+                requestDto.nome(),
+                requestDto.telefone(),
+                requestDto.genero(),
+                requestDto.dataNascimento(),
+                requestDto.cpf(),
+                requestDto.rg(),
+                requestDto.naturalidade(),
+                requestDto.cep(),
+                requestDto.logradouro(),
+                requestDto.numero(),
+                requestDto.complemento(),
+                requestDto.bairro(),
+                requestDto.uf(),
+                requestDto.referencia(),
+                requestDto.turma(),
+                null,
+                null,
+                usuario
+        );
 
-
-
-        TurmaEntity turma = turmaService.buscarEntityPorId(requestDto.turmaId());
-        if(turma.getId() != null) {
-            existingAluno.setTurma(turma);
-        } else {
-            log.error("Não é possível encontrar a turma com id {}.", requestDto.turmaId());
-        }
-
-        alunoRepository.save(existingAluno);
+        super.atualizar(superRequest, id);
     }
 
 
     @Override
     public void deletar(Long id) {
         entidadeExiste(id);
-        AlunoEntity existeAluno = alunoRepository.findById(id)
+        AlunoEntity existeAluno = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Aluno com id: '" + id + "' não encontrado"));
 
         UsuarioEntity usuario = existeAluno.getUsuario();
-        alunoRepository.delete(existeAluno);
+        repository.delete(existeAluno);
         log.info("Aluno com id {} deletado com sucesso", id);
 
         if (usuario != null) {
             usuarioRepository.delete(usuario);
             log.info("Usuário com email {} deletado com sucesso", usuario.getEmail());
         } else {
-            log.warn("Usuário associado ao aluno não encontrado");
+            log.warn("Usuário associado ao docente não encontrado");
         }
     }
+
 }
