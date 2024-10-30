@@ -15,13 +15,9 @@ import static projetofinal.com.labpcp.infra.Util.AcessoUtil.verificarPermicao;
 public abstract class GenericController<S extends GenericService<RES, REQ>, RES, REQ> {
 
     @Autowired
-    private S service;
+    protected S service;
     private final List<String> permicoes;
     private final String nomeEntity;
-
-   /* protected GenericController(List<String> acessos) {
-        this.permicoes = acessos;
-    } */
 
     protected GenericController(List<String> acessos) {
         this.permicoes = acessos;
@@ -30,7 +26,7 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     }
 
     @GetMapping("buscar/{id}")
-    public ResponseEntity<RES> buscarId(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception{
+    public ResponseEntity<RES> buscarId(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception {
         verificarPermicao(token, permicoes);
 
         log.info("buscando {} com id {}", nomeEntity, id);
@@ -57,7 +53,7 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
     }
 
     @DeleteMapping("deletar/{id}")
-    public ResponseEntity<Object> deleter(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception{
+    public ResponseEntity<Object> deleter(@RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception {
         verificarPermicao(token, List.of("administrador"));
 
         log.info("deletando {} com id {}", nomeEntity, id);
@@ -65,8 +61,9 @@ public abstract class GenericController<S extends GenericService<RES, REQ>, RES,
         service.deletar(id);
         return ResponseEntity.status(204).build();
     }
+
     @PutMapping("atualizar/{id}")
-    public ResponseEntity<Object> atualizar(@RequestHeader(name = "Authorization") String token, @RequestBody REQ requestDto, @PathVariable Long id) throws Exception{
+    public ResponseEntity<Object> atualizar(@RequestHeader(name = "Authorization") String token, @RequestBody REQ requestDto, @PathVariable Long id) throws Exception {
         verificarPermicao(token, permicoes);
 
         log.info("atualizando {} com id {}", nomeEntity, id);
