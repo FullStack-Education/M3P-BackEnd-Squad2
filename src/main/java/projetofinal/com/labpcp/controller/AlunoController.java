@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projetofinal.com.labpcp.controller.dto.request.AlunoRequest;
 import projetofinal.com.labpcp.controller.dto.response.AlunoResponse;
+import projetofinal.com.labpcp.controller.dto.response.AvaliacaoResponse;
 import projetofinal.com.labpcp.infra.generic.GenericController;
 import projetofinal.com.labpcp.service.AlunoService;
 
@@ -40,4 +41,12 @@ public class AlunoController extends GenericController<AlunoService, AlunoRespon
 
         return ResponseEntity.status(200).body(service.buscarTodos());
     }
+
+
+    @GetMapping("/{idAluno}/notas")
+    public List<AvaliacaoResponse> listarAvaliacoesPorAluno(@PathVariable Long idAluno) {
+        log.info("Buscando todas as notas do Aluno");
+        return service.listarAvaliacoesPorAluno(idAluno);
+    }
+
 }
