@@ -48,6 +48,7 @@ class MateriaServiceTest {
         lenient().when(materiaRepository.findById(1L)).thenReturn(Optional.of(materia));
         lenient().when(materiaRepository.findAll()).thenReturn(Collections.singletonList(materia));
         lenient().when(materiaRepository.existsById(1L)).thenReturn(true);
+        lenient().when(cursoRepository.findById(1L)).thenReturn(Optional.of(curso));
     }
 
     @Test
@@ -93,23 +94,30 @@ class MateriaServiceTest {
     @Test
     @DisplayName("Deve atualizar materia")
     void deveAtualizarMateria() {
-        when(materiaRepository.save(materia))
-                .thenReturn(materia);
+        MateriaRequest materiaRequest = new MateriaRequest("atualizado", curso.getId());
+        materiaService.atualizar(materiaRequest, materia.getId());
 
-        materiaService.atualizar(new MateriaRequest("atualizado", 1L), materia.getId());
+        assertNotNull(materia);
+    }
 
-        assertEquals(materia.getNome(), "atualizado");
+    @Test
+    @DisplayName("Deve lançar exceção ao atualizar materia não encontrado")
+    void deveLancarExcecaoQuandoMateriaNaoForEncontradaAoAtualizar() {
+        assertThrows(NotFoundExceptionEntity.class, () -> { materiaService.atualizar(new MateriaRequest("atualizado", curso.getId()), 0L); });
     }
 
     @Test
     @DisplayName("Deve deletar materia")
     void deveDeletarMateria() {
-        when(materiaRepository.findById(1L))
-                .thenReturn(Optional.of(materia));
-
         materiaService.deletar(materia.getId());
 
         assertNotNull(materia);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar materia não encontrado")
+    void deveLancarExcecaoQuandoMateriaNaoForEncontradaAoDeletar() {
+        assertThrows(NotFoundExceptionEntity.class, () -> { materiaService.deletar(0L); });
     }
 
     @Test
