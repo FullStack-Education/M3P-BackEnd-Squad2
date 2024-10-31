@@ -79,7 +79,6 @@ public abstract class GenericServiceImpl<E extends GenericEntity, RES, REQ> impl
 
         if (!repository.existsById(id)) {
             throw new NotFoundExceptionEntity(nomeEntity, id);
-
         }
 
         log.info("{} com id {} existe", nomeEntity, id);
