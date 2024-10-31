@@ -152,6 +152,15 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
     }
 
     @Override
+    public List<DocenteResponse> buscarTodos() {
+        List<DocenteEntity> docentes = repository.findByUsuarioPerfilNome("docente");
+
+        log.info("todas as entidades de docente encontradas com sucesso");
+
+        return docentes.stream().map(this::paraDto).collect(Collectors.toList());
+    }
+
+    @Override
     public void atualizar(DocenteRequest requestDto, Long id) {
         entidadeExiste(id);
 
