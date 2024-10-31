@@ -61,6 +61,11 @@ public class TurmaServiceImpl extends GenericServiceImpl<TurmaEntity, TurmaRespo
                     return new NotFoundException("Docente com id: '" + requestDto.docenteId() + "' não encontrado");
                 });
 
+        if (docente.getUsuario().getPerfil().getNome().equals("administrador")) {
+            log.error("Docente com id: '{}' não encontrado.", requestDto.docenteId());
+            throw new BadRequestException("Docente não encontrado");
+        }
+
         log.debug("Buscando curso com ID: {}", requestDto.cursoId());
         CursoEntity curso = cursoRepository.findById(requestDto.cursoId())
                 .orElseThrow(() -> {

@@ -13,6 +13,8 @@ import projetofinal.com.labpcp.repository.*;
 import projetofinal.com.labpcp.service.AlunoService;
 import projetofinal.com.labpcp.service.UsuarioService;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -24,14 +26,17 @@ public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoRespo
     private final TurmaRepository turmaRepository;
     private final UsuarioService usuarioService;
 
+    private final AvaliacaoRepository avaliacaoRepository;
 
 
-    protected AlunoServiceImpl(AlunoRepository repository, UsuarioRepository usuarioRepository, TurmaRepository turmaRepository, UsuarioService usuarioService) {
+
+    protected AlunoServiceImpl(AlunoRepository repository, UsuarioRepository usuarioRepository, TurmaRepository turmaRepository, UsuarioService usuarioService, AvaliacaoRepository avaliacaoRepository) {
         super(repository);
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.turmaRepository = turmaRepository;
         this.usuarioService = usuarioService;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     @Override
@@ -211,5 +216,25 @@ public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoRespo
             log.warn("Usuário associado ao docente não encontrado");
         }
     }
+
+    @Override
+    public List<AvaliacaoResponse> listarAvaliacoesPorAluno(Long idAluno) {
+        log.info("Listando avaliações para o aluno com id {}", idAluno);
+
+        AlunoEntity aluno = repository.findById(idAluno)
+                .orElseThrow(() -> new NotFoundException("Aluno com id: '" + idAluno + "' não encontrado"));
+
+        return avaliacaoRepository.findByAlunoId(idAluno).stream()
+                .map(a -> new AvaliacaoResponse(
+                        a.getId(),
+                        a.getNome(),
+                        a.getValor(),
+                        a.getDataAvaliacao(),
+                        a.getAluno().getId(),
+                        a.getDocente().getId(),
+                        a.getMateria().getId()))
+                .collect(Collectors.toList());
+    }
+
 
 }
