@@ -1,51 +1,41 @@
 package projetofinal.com.labpcp.service.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
+import projetofinal.com.labpcp.controller.dto.request.AlunoRequest;
 import projetofinal.com.labpcp.controller.dto.request.CadastroRequest;
-import projetofinal.com.labpcp.controller.dto.request.DocenteRequest;
-import projetofinal.com.labpcp.controller.dto.response.CadastroResponse;
-import projetofinal.com.labpcp.controller.dto.response.DocenteResponse;
-
-import projetofinal.com.labpcp.controller.dto.response.MateriaResponse;
-import projetofinal.com.labpcp.entity.DocenteEntity;
-import projetofinal.com.labpcp.entity.MateriaEntity;
-import projetofinal.com.labpcp.entity.UsuarioEntity;
-import projetofinal.com.labpcp.infra.exception.error.BadRequestException;
+import projetofinal.com.labpcp.controller.dto.response.*;
+import projetofinal.com.labpcp.entity.*;
 import projetofinal.com.labpcp.infra.exception.error.EntityAlreadyExists;
 import projetofinal.com.labpcp.infra.exception.error.NotFoundException;
 import projetofinal.com.labpcp.infra.generic.GenericServiceImpl;
 import projetofinal.com.labpcp.repository.*;
-import projetofinal.com.labpcp.service.DocenteService;
+import projetofinal.com.labpcp.service.AlunoService;
 import projetofinal.com.labpcp.service.UsuarioService;
 
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
-public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, DocenteResponse, DocenteRequest> implements DocenteService {
+public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoResponse, AlunoRequest> implements AlunoService {
     private final UsuarioRepository usuarioRepository;
-    private final MateriaRepository materiaRepository;
-    private final DocenteRepository repository;
+
+    private final AlunoRepository repository;
     private final TurmaRepository turmaRepository;
     private final UsuarioService usuarioService;
 
 
 
-    protected DocenteServiceImpl(DocenteRepository repository, UsuarioRepository usuarioRepository, MateriaRepository materiaRepository, TurmaRepository turmaRepository, UsuarioService usuarioService) {
+    protected AlunoServiceImpl(AlunoRepository repository, UsuarioRepository usuarioRepository, TurmaRepository turmaRepository, UsuarioService usuarioService) {
         super(repository);
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
-        this.materiaRepository = materiaRepository;
         this.turmaRepository = turmaRepository;
         this.usuarioService = usuarioService;
     }
 
     @Override
-    protected DocenteResponse paraDto(DocenteEntity entity) {
+    protected AlunoResponse paraDto(AlunoEntity entity) {
         log.info("Buscando usuário pelo email");
 
         UsuarioEntity usuarioCadastrado = usuarioRepository.findByEmail(entity.getUsuario().getEmail())
@@ -57,19 +47,28 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 usuarioCadastrado.getPerfil().getNome()
         );
 
-        log.info("convertendo entidade de docente para dto");
+        log.info("convertendo entidade de aluno para dto");
+
+        TurmaEntity turmaEntity = turmaRepository.findById(entity.getTurma().getId())
+                .orElseThrow(() -> new NotFoundException("Turma com ID: '" + entity.getTurma().getId() + "' não encontrada"));
 
 
-        List<MateriaResponse> materias = entity.getMaterias().stream()
-                .map(materia -> new MateriaResponse(materia.getId(), materia.getNome(), materia.getCurso().getId()))
-                .collect(Collectors.toList());
+        TurmaResponse turma = new TurmaResponse(
+                turmaEntity.getId(),
+                turmaEntity.getNome(),
+                turmaEntity.getDataInicio(),
+                turmaEntity.getDataTermino(),
+                turmaEntity.getHorario(),
+                turmaEntity.getDocente().getId(),
+                turmaEntity.getCurso().getId()
+        );
 
-        return new DocenteResponse(
+
+        return new AlunoResponse(
                 entity.getId(),
                 entity.getNome(),
                 entity.getTelefone(),
                 entity.getGenero(),
-                entity.getEstadoCivil(),
                 entity.getDataNascimento(),
                 entity.getCpf(),
                 entity.getRg(),
@@ -81,26 +80,25 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 entity.getBairro(),
                 entity.getUf(),
                 entity.getReferencia(),
-                retornoUsuario,
-                materias
+                turma,
+                retornoUsuario
         );
     }
 
     @Override
-    protected DocenteEntity paraEntity(DocenteRequest requestDto) {
+    protected AlunoEntity paraEntity(AlunoRequest requestDto) {
 
-        log.info("convertendo dto de docente para entidade");
+        log.info("convertendo dto de aluno para entidade");
 
-        List<MateriaEntity> materias = requestDto.materiasIds().stream()
-                .map(materiaId -> materiaRepository.findById(materiaId)
-                        .orElseThrow(() -> new NotFoundException("Matéria com id: " + materiaId + " não encontrada")))
-                .collect(Collectors.toList());
 
-        return new DocenteEntity(
+
+        TurmaEntity turma = turmaRepository.findById(requestDto.turma())
+                .orElseThrow(() -> new NotFoundException("Turma com ID: '" + requestDto.turma() + "' não encontrada"));
+
+        return new AlunoEntity(
                 requestDto.nome(),
                 requestDto.telefone(),
                 requestDto.genero(),
-                requestDto.estadoCivil(),
                 requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
@@ -112,25 +110,25 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.bairro(),
                 requestDto.uf(),
                 requestDto.referencia(),
-                requestDto.usuario(),
-                materias
+                turma,
+                requestDto.usuario()
+
         );
     }
 
     @Override
-    public DocenteResponse criar(DocenteRequest requestDto) {
+    public AlunoResponse criar(AlunoRequest requestDto) {
 
-        log.info("Criando usuário para o docente");
+        log.info("Criando usuário para o aluno");
 
-        CadastroResponse cadastroResponse = usuarioService.cadastrarUsuario(new CadastroRequest(requestDto.email(), requestDto.senha(), "docente"));
+        CadastroResponse cadastroResponse = usuarioService.cadastrarUsuario(new CadastroRequest(requestDto.email(), requestDto.senha(), "aluno"));
 
         UsuarioEntity usuario = usuarioRepository.findById(cadastroResponse.id()).orElseThrow(() -> new NotFoundException("usuário para docente não esta sendo criado corretamente"));
 
-        DocenteRequest superRequest = new DocenteRequest(
+        AlunoRequest superRequest = new AlunoRequest(
                 requestDto.nome(),
                 requestDto.telefone(),
                 requestDto.genero(),
-                requestDto.estadoCivil(),
                 requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
@@ -142,7 +140,7 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.bairro(),
                 requestDto.uf(),
                 requestDto.referencia(),
-                requestDto.materiasIds(),
+                requestDto.turma(),
                 null,
                 null,
                 usuario
@@ -152,17 +150,17 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
     }
 
     @Override
-    public void atualizar(DocenteRequest requestDto, Long id) {
+    public void atualizar(AlunoRequest requestDto, Long id) {
         entidadeExiste(id);
 
-        DocenteEntity existingDocente = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Docente com id: '" + id + "' não encontrado"));
+        AlunoEntity existingAluno = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Aluno com id: '" + id + "' não encontrado"));
 
 
         String email = requestDto.email();
-        UsuarioEntity usuario = existingDocente.getUsuario();
+        UsuarioEntity usuario = existingAluno.getUsuario();
 
-        if (!email.equals(existingDocente.getUsuario().getEmail())) {
+        if (!email.equals(existingAluno.getUsuario().getEmail())) {
             usuarioRepository.findByEmail(email)
                     .ifPresent(usuarioEmail -> {
                         throw new EntityAlreadyExists("usuarios", "email", email);
@@ -171,11 +169,10 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
             usuarioRepository.save(usuario);
         }
 
-        DocenteRequest superRequest = new DocenteRequest(
+        AlunoRequest superRequest = new AlunoRequest(
                 requestDto.nome(),
                 requestDto.telefone(),
                 requestDto.genero(),
-                requestDto.estadoCivil(),
                 requestDto.dataNascimento(),
                 requestDto.cpf(),
                 requestDto.rg(),
@@ -187,7 +184,7 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
                 requestDto.bairro(),
                 requestDto.uf(),
                 requestDto.referencia(),
-                requestDto.materiasIds(),
+                requestDto.turma(),
                 null,
                 null,
                 usuario
@@ -200,27 +197,12 @@ public class DocenteServiceImpl extends GenericServiceImpl<DocenteEntity, Docent
     @Override
     public void deletar(Long id) {
         entidadeExiste(id);
-        DocenteEntity existeDocente = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Docente com id: '" + id + "' não encontrado"));
+        AlunoEntity existeAluno = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Aluno com id: '" + id + "' não encontrado"));
 
-
-        if (turmaRepository.existsByDocenteId(id)) {
-            log.error("Não é possível deletar o docente com id {}. Ele possui turmas associadas.", id);
-            throw new BadRequestException("Não é possível deletar o docente enquanto ele tiver turmas associadas.");
-        }
-
-
-        if (existeDocente.getMaterias() != null && !existeDocente.getMaterias().isEmpty()) {
-            for (MateriaEntity materia : existeDocente.getMaterias()) {
-                log.info("Removendo docente de matéria com id {}", materia.getId());
-                materia.getDocentes().remove(existeDocente);
-                materiaRepository.save(materia);
-            }
-        }
-
-        UsuarioEntity usuario = existeDocente.getUsuario();
-        repository.delete(existeDocente);
-        log.info("Docente com id {} deletado com sucesso", id);
+        UsuarioEntity usuario = existeAluno.getUsuario();
+        repository.delete(existeAluno);
+        log.info("Aluno com id {} deletado com sucesso", id);
 
         if (usuario != null) {
             usuarioRepository.delete(usuario);
