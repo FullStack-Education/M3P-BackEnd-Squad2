@@ -22,6 +22,8 @@ public class CursoEntity extends GenericEntity {
 
     public CursoEntity () {}
 
+    public CursoEntity (String nome, String duracao) {}
+
     public CursoEntity (CursoRequest request) {
         this.nome = request.nome();
         this.duracao = request.duracao();
