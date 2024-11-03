@@ -236,5 +236,28 @@ public class AlunoServiceImpl extends GenericServiceImpl<AlunoEntity, AlunoRespo
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public double pontuacaoTotalAluno(Long idAluno) {
+        log.info("Calculando pontuação total para o aluno com id {}", idAluno);
 
+        AlunoEntity aluno = repository.findById(idAluno)
+                .orElseThrow(() -> new NotFoundException("Aluno com id: '" + idAluno + "' não encontrado"));
+
+        List<AvaliacaoEntity> avaliacoes = avaliacaoRepository.findByAlunoId(idAluno);
+        double somaNotas = avaliacoes.stream().mapToDouble(avaliacao -> avaliacao.getValor().doubleValue()).sum();
+
+        TurmaEntity turma = aluno.getTurma();
+        DocenteEntity docente = turma.getDocente();
+        long numeroMaterias = docente.getMaterias().size();
+
+        if (numeroMaterias == 0) {
+            throw new ArithmeticException("Número de matérias é zero, não é possível calcular a pontuação.");
+        }
+
+        double pontuacao = (somaNotas / numeroMaterias) * 10;
+
+        log.info("Pontuação total calculada para o aluno com id {}: {}", idAluno, pontuacao);
+
+        return pontuacao;
+    }
 }

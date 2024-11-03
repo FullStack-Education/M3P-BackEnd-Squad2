@@ -49,4 +49,13 @@ public class AlunoController extends GenericController<AlunoService, AlunoRespon
         return service.listarAvaliacoesPorAluno(idAluno);
     }
 
+    @GetMapping("/{id}/pontuacao")
+    public ResponseEntity<Double> obterPontuacao(@RequestHeader(name = "Authorization") String token,
+                                                 @PathVariable Long id) {
+        verificarPermicao(token, List.of("aluno"));
+
+        log.info("Obtendo pontuação para o Aluno com id {}", id);
+
+        return ResponseEntity.status(200).body(service.pontuacaoTotalAluno(id));
+    }
 }
