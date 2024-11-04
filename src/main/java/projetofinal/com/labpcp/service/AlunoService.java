@@ -10,4 +10,6 @@ import java.util.List;
 public interface AlunoService extends GenericService<AlunoResponse, AlunoRequest> {
 
     List<AvaliacaoResponse> listarAvaliacoesPorAluno(Long idAluno);
+
+    double pontuacaoTotalAluno(Long idAluno);
 }
