@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface DocenteRepository extends JpaRepository<DocenteEntity, Long> {
     Optional<DocenteEntity> findByUsuarioId(Long usuarioId);
     List<DocenteEntity> findByUsuarioPerfilNome(String perfilNome);
+    Long countByUsuarioPerfilNome(String perfilNome);
 }

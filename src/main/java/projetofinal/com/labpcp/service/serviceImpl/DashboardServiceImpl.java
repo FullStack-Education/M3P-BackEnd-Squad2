@@ -24,7 +24,8 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardDto getDashboardData() {
         Long totalAlunos = alunoRepository.count();
         Long totalTurmas = turmaRepository.count();
-        Long totalDocentes = docenteRepository.count();
+        //Long totalDocentes = docenteRepository.count();
+        Long totalDocentes = docenteRepository.countByUsuarioPerfilNome("docente");
 
         return new DashboardDto(totalAlunos, totalTurmas, totalDocentes);
     }

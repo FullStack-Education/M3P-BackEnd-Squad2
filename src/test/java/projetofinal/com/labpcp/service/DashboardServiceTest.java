@@ -35,7 +35,7 @@ class DashboardServiceTest {
 
         when(alunoRepository.count()).thenReturn(100L);
         when(turmaRepository.count()).thenReturn(10L);
-        when(docenteRepository.count()).thenReturn(5L);
+        when(docenteRepository.countByUsuarioPerfilNome("docente")).thenReturn(5L);
 
         DashboardDto dashboardDto = service.getDashboardData();
 
