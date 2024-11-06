@@ -11,6 +11,7 @@ Este projeto é uma API REST desenvolvida com o framework Spring Boot, voltada p
 - PostgreSQL
 - Git
 - Docker
+- Swagger
 
 ## Pré-requisitos
 
@@ -67,7 +68,13 @@ Utilize o token gerado pelas credenciais do usuário administrador ao se logar p
 - **Aluno:** Crie alunos nos endpoints de aluno
 - **Notas:** Lançe notas a um aluno utilizando os endpoints de nota.
 
-## Testando a API com Insomnia
+## Testando a API 
+
+### Swagger
+
+Você pode testar os endpoints da API através do swagger acessando o link: [swagger](http://localhost:8080/swagger-ui/index.html#/)
+
+### Insomnia
 
 Você pode importar as requisições do Insomnia para facilitar os testes. Para fazer isso, siga as etapas:
 
@@ -75,7 +82,7 @@ Você pode importar as requisições do Insomnia para facilitar os testes. Para 
 2. Vá em `File` > `Import`.
 3. Selecione o arquivo `insomnia_requests.json` incluído neste repositório.
 
-### Insomnia Requests
+#### Insomnia Requests
 O arquivo `insomnia_requests.json` contém as requisições para todos os endpoints da API.
 
 ## Projeto Angular
