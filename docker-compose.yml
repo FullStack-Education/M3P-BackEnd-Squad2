@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://fullstack-gestao-de-ensino-labpcp:5432/database
+      DB_USERNAME: meuUsuario
+      DB_PASSWORD: minhaSenha
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: fullstack-gestao-de-ensino-labpcp
+    ports:
+      - "1432:5432"
+    environment:
+      POSTGRES_DB: database
+      POSTGRES_USER: meuUsuario
+      POSTGRES_PASSWORD: minhaSenha
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
