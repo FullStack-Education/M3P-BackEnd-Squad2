@@ -61,7 +61,7 @@ public class CursoController extends GenericController<CursoService, CursoRespon
     @Override
     @GetMapping("buscar/{id}")
     public ResponseEntity<CursoResponse> buscarId(@Parameter(hidden = true)  @RequestHeader(name = "Authorization") String token, @PathVariable Long id) throws Exception {
-        verificarPermicao(token, List.of("administrador", "docente", "curso"));
+        verificarPermicao(token, List.of("administrador", "docente", "aluno"));
 
         log.info("Buscando curso com id {}", id);
 
